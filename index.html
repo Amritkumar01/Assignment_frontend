@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBAC Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <h1>RBAC Management</h1>
+    </header>
+    <main>
+        <section class="container">
+            <div class="sidebar">
+                <ul>
+                    <li><a href="#users">User Management</a></li>
+                    <li><a href="#roles">Role Management</a></li>
+                    <li><a href="#permissions">Permissions</a></li>
+                </ul>
+            </div>
+            <div class="content">
+                <!-- User Management -->
+                <div id="users" class="tab active">
+                    <h2>User Management</h2>
+                    <form id="userForm">
+                        <label for="userName">Name:</label>
+                        <input type="text" id="userName" placeholder="Enter user name" required>
+                        
+                        <label for="userEmail">Email:</label>
+                        <input type="email" id="userEmail" placeholder="Enter user email" required>
+                        
+                        <label for="userRole">Assign Role:</label>
+                        <select id="userRole" required>
+                            <option value="">Select a role</option>
+                            <option value="Frontend">Frontend</option>
+                            <option value="Backend">Backend</option>
+                        </select>
+                        
+                        <label for="userStatus">Status:</label>
+                        <select id="userStatus" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        
+                        <button type="submit">Add User</button>
+                    </form>
+                    <h3>Users List</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userList"></tbody>
+                    </table>
+                </div>
+                
+                <!-- Role Management -->
+                <div id="roles" class="tab hidden">
+                    <h2>Role Management</h2>
+                    <form id="roleForm">
+                        <label for="roleName">Role Name:</label>
+                        <input type="text" id="roleName" placeholder="Enter role name" required>
+                        
+                        <label for="permissions">Permissions:</label>
+                        <input type="text" id="permissions" placeholder="Comma-separated permissions" required>
+                        
+                        <button type="submit">Add Role</button>
+                    </form>
+                    <h3>Roles List</h3>
+                    <ul id="roleList" class="list"></ul>
+                </div>
+                
+                <!-- Dynamic Permissions -->
+                <div id="permissions" class="tab hidden">
+                    <h2>Manage Permissions</h2>
+                    <form id="permissionForm">
+                        <label for="rolePermission">Select Role:</label>
+                        <select id="rolePermission" required>
+                            <option value="">Select a role</option>
+                        </select>
+                        
+                        <label for="permissionUpdate">Update Permissions:</label>
+                        <input type="text" id="permissionUpdate" placeholder="Comma-separated permissions" required>
+                        
+                        <button type="submit">Update Permissions</button>
+                    </form>
+                    <h3>Role Permissions</h3>
+                    <ul id="permissionList"></ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        <p>&copy; 2024 RBAC System</p>
+    </footer>
+    <script>
+        // script.js
+document.addEventListener("DOMContentLoaded", () => {
+    const tabs = document.querySelectorAll(".tab");
+    const sidebarLinks = document.querySelectorAll(".sidebar ul li a");
+
+    // Tab navigation
+    sidebarLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const target = e.target.getAttribute("href").substring(1);
+
+            tabs.forEach((tab) => tab.classList.remove("active"));
+            document.getElementById(target).classList.add("active");
+        });
+    });
+
+    // User management
+    const userForm = document.getElementById("userForm");
+    const userList = document.getElementById("userList");
+    const userRoleSelect = document.getElementById("userRole");
+
+    // Role management
+    const roleForm = document.getElementById("roleForm");
+    const roleList = document.getElementById("roleList");
+    const rolePermissionSelect = document.getElementById("rolePermission");
+
+    roleForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const roleName = document.getElementById("roleName").value.trim();
+        const permissions = document.getElementById("permissions").value.trim();
+        if (roleName && permissions) {
+            const roleItem = document.createElement("li");
+            roleItem.textContent = `${roleName} - Permissions: ${permissions}`;
+            roleList.appendChild(roleItem);
+
+            const option = document.createElement("option");
+            option.value = roleName;
+            option.textContent = roleName;
+            userRoleSelect.appendChild(option);
+            rolePermissionSelect.appendChild(option.cloneNode(true));
+
+            roleForm.reset();
+        }
+    });
+
+    // Add user
+    userForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const userName = document.getElementById("userName").value.trim();
+        const userEmail = document.getElementById("userEmail").value.trim();
+        const userRole = userRoleSelect.value;
+        const userStatus = document.getElementById("userStatus").value;
+
+        if (userName && userEmail && userRole) {
+            const userRow = document.createElement("tr");
+            userRow.innerHTML = `
+                <td>${userName}</td>
+                <td>${userEmail}</td>
+                <td>${userRole}</td>
+                <td>${userStatus}</td>
+                <td><button class="delete-btn">Delete</button></td>
+            `;
+            userList.appendChild(userRow);
+
+            userRow.querySelector(".delete-btn").addEventListener("click", () => {
+                userRow.remove();
+            });
+
+            userForm.reset();
+        }
+    });
+
+    // Update permissions
+    const permissionForm = document.getElementById("permissionForm");
+    const permissionList = document.getElementById("permissionList");
+
+    permissionForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const role = rolePermissionSelect.value;
+        const updatedPermissions = document.getElementById("permissionUpdate").value.trim();
+
+        if (role && updatedPermissions) {
+            const permissionItem = document.createElement("li");
+            permissionItem.textContent = `${role} - Updated Permissions: ${updatedPermissions}`;
+            permissionList.appendChild(permissionItem);
+
+            permissionForm.reset();
+        }
+    });
+});
+
+    </script>
+</body>
+</html>
